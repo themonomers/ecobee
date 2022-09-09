@@ -1,7 +1,9 @@
 import requests
 import json
+import os
 
 from Utilities import getToken, printJson
+from Crypto import encrypt
 
 AUTH_URL = 'https://api.ecobee.com/token'
 BASE_URL = 'https://api.ecobee.com/1/thermostat'
@@ -31,6 +33,11 @@ def getThermostatInfo():
       ).text
     )
 
+    # Detect expired token and re-auth
+    if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
+      print('Refreshing authentication token.  Please re-run your script.')
+      authToken()
+
     return response
   except Exception as e:
     print('getThermostatInfo(): ' + str(e))
@@ -40,7 +47,7 @@ def getThermostatInfo():
 #
 #
 ##
-def getToken():
+def authToken():
   try:
     url = (AUTH_URL
            + '?grant_type=refresh_token'
@@ -49,18 +56,38 @@ def getToken():
            + '&client_id='
            + API_KEY)
 
-    response = requests.post(
-                 url
-               ).text
+    response = json.loads(
+      requests.post(
+        url
+      ).text
+    )
 
-    return json.loads(response)
+    message =  '[ecobee]\n'
+    message += 'access_token=' + response['access_token'] + '\n'
+    message += 'token_type=' + response['token_type'] + '\n'
+    message += 'refresh_token=' + response['refresh_token'] + '\n'
+    message += 'expires_in=' + str(response['expires_in']) + '\n'
+    message += 'scope=' + response['scope'] + '\n'
+    message += 'api_key=' + API_KEY + '\n'
+
+    # Encrypt config file
+    encrypt(
+      message,
+      os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'token.xor'
+      ),
+      os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'token_key'
+      )
+    )
   except Exception as e:
     print('getToken(): ' + str(e))
 
 
 def main():
-  print('[1]  getToken()')
-  print('[2]  getThermostatInfo()')
+  print('[1]  getThermostatInfo()')
 
   try:
     choice = int(input('selection: '))
@@ -68,8 +95,6 @@ def main():
     return
 
   if choice == 1:
-    data = getToken()
-  elif choice == 2:
     data = getThermostatInfo()
 
   printJson(data, 0)
