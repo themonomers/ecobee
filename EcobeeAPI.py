@@ -21,7 +21,13 @@ ACCESS_TOKEN = config['ecobee']['access_token']
 ##
 def getThermostatInfo():
   try:
-    body = {'selection': {'selectionType': 'registered', 'selectionMatch': '', 'includeRuntime': 'true'}}
+    body = {'selection': 
+             {'selectionType': 'registered', 
+              'selectionMatch': '', 
+              'includeRuntime': 'true',
+              'includeSensors': 'true'
+             }
+           }
 
     url = (BASE_URL
            + '?format=json'
