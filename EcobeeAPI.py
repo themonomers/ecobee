@@ -15,8 +15,9 @@ ACCESS_TOKEN = config['ecobee']['access_token']
 
 
 ##
+# Retrieves Ecobee thermostat data using their API and access token.
 #
-#
+# author: mjhwa@yahoo.com
 ##
 def getThermostatInfo():
   try:
@@ -36,7 +37,7 @@ def getThermostatInfo():
     # Detect expired token and re-auth
     if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
       print('Refreshing authentication token.  Please re-run your script.')
-      authToken()
+      refreshToken()
 
     return response
   except Exception as e:
@@ -44,10 +45,13 @@ def getThermostatInfo():
 
 
 ##
+# Gets a new access token using the documented method on Ecobee's developer
+# portal.  This will also write the new token into a local encrypted file
+# for reuse. 
 #
-#
+# author: mjhwa@yahoo.com
 ##
-def authToken():
+def refreshToken():
   try:
     url = (AUTH_URL
            + '?grant_type=refresh_token'
@@ -83,7 +87,7 @@ def authToken():
       )
     )
   except Exception as e:
-    print('getToken(): ' + str(e))
+    print('refreshToken(): ' + str(e))
 
 
 def main():
