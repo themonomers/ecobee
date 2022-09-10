@@ -12,6 +12,8 @@ def getTemperatures():
     temperature = 0.0
     occupancy = ''
     for x in data['thermostatList']:
+      print('Overall: ' + str(round(float(x['runtime']['actualTemperature']) * 0.1, 1)) + '°F')
+
       for y in x['remoteSensors']:
         for z in y['capability']:
           if z['type'] == 'temperature':
