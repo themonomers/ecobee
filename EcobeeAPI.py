@@ -27,7 +27,8 @@ def getReport(s_date, e_date):
             'columns': 'zoneHvacMode,zoneCalendarEvent',
             'selection': {'selectionType': 'thermostats',
                           'selectionMatch': THERMOSTAT_ID 
-                         }
+                         },
+            'includeSensors': 'true'
            }    
 
     url = (BASE_URL
@@ -45,7 +46,7 @@ def getReport(s_date, e_date):
     # Detect expired token and re-auth
     if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
       refreshToken()
-      return getReport()
+      return getReport(s_date, e_date)
 
     return response
   except Exception as e:
