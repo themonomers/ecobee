@@ -11,7 +11,6 @@ BASE_URL = 'https://api.ecobee.com/1/thermostat'
 config = getToken()
 REFRESH_TOKEN = config['ecobee']['refresh_token']
 API_KEY = config['ecobee']['api_key']
-ACCESS_TOKEN = config['ecobee']['access_token']
 
 
 ##
@@ -36,14 +35,14 @@ def getThermostatInfo():
     response = json.loads(
       requests.get(
         url,
-        headers={'authorization': 'Bearer ' + ACCESS_TOKEN}
+        headers={'authorization': 'Bearer ' + getToken()['ecobee']['access_token']}
       ).text
     )
 
     # Detect expired token and re-auth
     if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
-      print('Refreshing authentication token.  Please re-run your script.')
       refreshToken()
+      return getThermostatInfo()
 
     return response
   except Exception as e:
