@@ -45,7 +45,7 @@ def getReport(s_date, e_date):
     # Detect expired token and re-auth
     if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
       refreshToken()
-      return getThermostatInfo()
+      return getReport()
 
     return response
   except Exception as e:
