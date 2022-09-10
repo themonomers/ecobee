@@ -8,6 +8,7 @@ from Crypto import encrypt
 
 AUTH_URL = 'https://api.ecobee.com/token'
 BASE_URL = 'https://api.ecobee.com/1'
+EXPIRED_MSG = 'Authentication token has expired. Refresh your tokens.'
 
 config = getToken()
 REFRESH_TOKEN = config['ecobee']['refresh_token']
@@ -44,7 +45,7 @@ def getReport(s_date, e_date):
     )
 
     # Detect expired token and re-auth
-    if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
+    if (response['status']['message'].strip() == EXPIRED_MSG):
       refreshToken()
       return getReport(s_date, e_date)
 
@@ -81,7 +82,7 @@ def getThermostatInfo():
     )
 
     # Detect expired token and re-auth
-    if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
+    if (response['status']['message'].strip() == EXPIRED_MSG):
       refreshToken()
       return getThermostatInfo()
 
