@@ -6,6 +6,35 @@ from io import StringIO
 
 
 ##
+# Retrieves dictionary of configuration values.
+#
+# author: mjhwa@yahoo.com
+##
+def getConfig():
+  try:
+    buffer = StringIO(
+      decrypt(
+        os.path.join(
+          os.path.dirname(os.path.abspath(__file__)),
+          'config.xor'
+        ),
+        os.path.join(
+          os.path.dirname(os.path.abspath(__file__)),
+          'config_key'
+        )
+      )
+    )
+    config = configparser.ConfigParser()
+    config.sections()
+    config.read_file(buffer)
+    values = {s:dict(config.items(s)) for s in config.sections()}
+    buffer.close()
+    return values
+  except Exception as e:
+    print('getConfig(): ' + str(e))
+
+
+##
 # Retrievies dictionary of access token values.
 #
 # author: mjhwa@yahoo.com

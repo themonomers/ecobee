@@ -2,15 +2,54 @@ import requests
 import json
 import os
 
-from Utilities import getToken, printJson
+from datetime import datetime
+from Utilities import getConfig, getToken, printJson
 from Crypto import encrypt
 
 AUTH_URL = 'https://api.ecobee.com/token'
-BASE_URL = 'https://api.ecobee.com/1/thermostat'
+BASE_URL = 'https://api.ecobee.com/1'
 
 config = getToken()
 REFRESH_TOKEN = config['ecobee']['refresh_token']
 API_KEY = config['ecobee']['api_key']
+THERMOSTAT_ID = getConfig()['ecobee']['thermostat_id']
+
+
+##
+# Gets runtime report for a given start and end date.
+#
+# author: mjhwa@yahoo.com
+##
+def getReport(s_date, e_date):
+  try:
+    body = {'startDate': datetime.strftime(s_date, '%Y-%m-%d'),
+            'endDate': datetime.strftime(e_date, '%Y-%m-%d'),
+            'columns': 'zoneHvacMode,zoneCalendarEvent',
+            'selection': {'selectionType': 'thermostats',
+                          'selectionMatch': THERMOSTAT_ID 
+                         }
+           }    
+
+    url = (BASE_URL
+           + '/runtimeReport'
+           + '?format=json'
+           + '&body=' + str(body))
+
+    response = json.loads(
+      requests.get(
+        url,
+        headers={'authorization': 'Bearer ' + getToken()['ecobee']['access_token']}
+      ).text
+    )
+
+    # Detect expired token and re-auth
+    if (response['status']['message'].strip() == 'Authentication token has expired. Refresh your tokens.'):
+      refreshToken()
+      return getThermostatInfo()
+
+    return response
+  except Exception as e:
+    print('getReport(): ' + str(e))
 
 
 ##
@@ -29,6 +68,7 @@ def getThermostatInfo():
            }
 
     url = (BASE_URL
+           + '/thermostat'
            + '?format=json'
            + '&body=' + str(body))
 
@@ -97,6 +137,7 @@ def refreshToken():
 
 def main():
   print('[1]  getThermostatInfo()')
+  print('[2]  getReport()')
 
   try:
     choice = int(input('selection: '))
@@ -105,6 +146,14 @@ def main():
 
   if choice == 1:
     data = getThermostatInfo()
+  elif choice == 2:
+    s_date = input('start date(m/d/yyyy): ')
+    s_date = datetime.strptime(s_date, '%m/%d/%Y')
+
+    e_date = input('end date(m/d/yyyy): ')
+    e_date = datetime.strptime(e_date, '%m/%d/%Y')
+
+    data = getReport(s_date, e_date)
 
   printJson(data, 0)
 
