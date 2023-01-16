@@ -16,10 +16,13 @@ def getTemperatures():
 
       for y in x['remoteSensors']:
         for z in y['capability']:
-          if z['type'] == 'temperature':
-            temperature = round((float(z['value']) * 0.1), 1)
           if z['type'] == 'occupancy':
             occupancy = z['value']
+          elif z['type'] == 'temperature':
+            try:
+              temperature = round((float(z['value']) * 0.1), 1)
+            except ValueError:
+              temperature = z['value']
 
         print(y['name'] + ': ' + str(temperature) + '°F (motion: ' + occupancy + ')')
   except Exception as e:
